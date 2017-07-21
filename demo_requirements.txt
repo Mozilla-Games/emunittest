@@ -1,0 +1,79 @@
+The following requirements should be met for a game demo to be included to the suite:
+
+1. The demo should have a mode to run autonomously without any user interaction required. This mode should be easy to trigger, e.g. press a key on the keyboard after the demo starts up, or even automatic. Optionally, the demo can have an interactive mode that allows the user to play with it.
+
+2. Render using requestAnimationFrame(), and not setTimeout/setInterval/setImmediate or other event-based mechanisms.
+
+3. Only register exactly one rAF loop. If two are needed, register one global one and route the calls to both.
+
+4. Application should statically create the canvas to render to on the main html page, i.e.
+
+   <canvas id='myCanvas'></canvas>
+
+as opposed to creating it dynamically inside library code. This is because the harness will need to inject to the canvas for profiling purposes before the application starts, so the canvas should be available beforehand.
+
+5. Don't resize the visible CSS size of the canvas to custom values e.g. based on browser window size. The harness controls the presentation size by embedding the demo page in an iframe.
+
+6. Use a fixed WebGL render target size for rendering, and preferably set the render target size in the main .html file. The size 1033x581 pixels is preferred, although if a different aspect ratio is desired, the pixel size should be smaller than this value both in width and height.
+
+7. Don't use synchronous blocking loops that depend on time to proceed as their exit condition. That is, the following style of code should be forbidden:
+
+   var t0 = performance.now();
+   while(performance.now() - t0 < 1000) {
+      // Do something;
+   }
+
+These types of loops will result in an application deadlock. The reason for this is that the test harness forces the demo to run in a "timedemo" manner, where time is advanced by a fixed 1/60th of a second each frame to make the executed computations identical on all tested systems for the results to be comparable.
+
+Likewise, don't use performance.now() or Date.now() to generate random numbers, but use Math.random() or some other PRNG. PRNGs can be seeded from performance.now() or Date.now(), but applications should not assume that the seeds would change on subsequent seedings.
+
+8. Prefer loading all assets up front at startup. This allows preloading the assets so that the demo test results times will not include any loading times.
+
+9. The total maximum downloaded amount of assets should be less than 150MB.
+
+10. Do not download content from online sources. The demo must run fully offline (unless the aim of the demo is to specifically test an online server component).
+
+11. Create a global "Module" object in the main HTML file which defines the interaction of the demo with the harness. This object can configure how the harness works on the demo:
+
+var Module = {
+	// Name of this game demo
+	key: 'uniqueIdentifierForTheDemoInQuestion'
+
+	// Options that the demo can pass to the harness: (the values set below show the default choices for the options, if the option is not present)
+
+	// If true, this demo provides requestAnimationFrame() integration for emunittest built-in. Generally this needs to be false, unless the app was specially built with emunittest support enabled.
+	providesRafIntegration: false,
+
+	// If true, this demo needs a faked Date.now()&performance.now() that advance after each call. If false, they can advance after each game frame. Generally set to false, unless game has problems with it.
+	needsFakeMonotonouslyIncreasingTimer: false,
+
+	// Specifies the time scale factor how fast time advances. If not specified, defaults to 1. Use this to scale the demo to advance faster or slower if necessary.
+	fakeTimeScale: 1.0,
+
+	// If true, Date.now()&performance.now() should not be faked at all for this demo, but the demo maintains the fixed timesteps itself. Generally always set to false, unless demo has been crafted with this specifically.
+	dontOverrideTime: false,
+
+	// If set to a > 0 value, this overrides the default number of frames that the test harness renders, which is 2000. This can further be overridden in the URL via '?numframes=<integer>' parameter for a single run.
+	overrideNumFramesToRender: 2000,
+
+	// Set this to true for demos that utilize the Emscripten html5.h input API. Defaults to false.
+	usesEmscriptenHTML5InputAPI: false,
+
+	// If true, the harness should intercept all XHRs to provide transparent caching of assets and a progress bar. Defaults to false.
+	injectXMLHttpRequests: false,
+
+	// This function is used to filter out certain XHRs from being fired at all. For the application perspective, it is as if they always time out.
+	xhrFilter: function(url) {
+		// If the function returns false, the XHR is ok to run and doesn't need to be discarded. If true, the XHR should be filtered out. If this function is not defined, all XHRs are ok to run.
+		return false;
+	},
+
+	// If true, 'resize' events of the browser window should get through to the game demo. By default the demo does not see browser window resizes.
+	pageNeedsResizeEvent: false,
+
+	// Optional: Application can implement this function to provide a hook to the harness to fade out the audio volume when the demo is about to finish. This
+	//           allows a nice exit to the demo when the audio doesn't sharply cut off.
+	globalMasterVolumeSetCallback: function(volume) {
+		// Set master volume to a value between 0.0 - 1.0.
+	}
+};

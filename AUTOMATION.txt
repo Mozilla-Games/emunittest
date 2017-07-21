@@ -1,0 +1,104 @@
+This suite can be run from the command line, via the 'emrun' browser automation tool.
+
+Getting Started
+---------------
+
+To manually run the full suite and capture results to a file on a single browser instance, type
+
+    python run.py [--browser=/path/to/firefox] > results_file.txt 2>&1
+
+For more command line options that can be passed to run.py, type
+
+    python emrun.py --help
+
+Notes:
+
+  - When running with Firefox, a clean temporary Firefox profile is used (hack emrun.py or run.py if this is not desirable)
+  - If --browser=xxx is not specified, the default system browser is launched.
+  - results_file.txt receives a full test results after each test is run, so only the last printed matrix at the end of the file is generally interesting.
+  - If you run into any issues, email jjylanki@mozilla.com.
+
+Running a single test
+---------------------
+
+To run a single test N number of times in a custom browser, execute
+
+   python run.py --browser=/path/to/firefox -- selectedTests=a,b,c numtimes=N
+
+This will spawn a new Firefox browser instance in a new profile, and after the tests are run, Firefox browser quits.
+
+Note that the '--' is deliberately detached via a space character from "selectedTests" directive above, as the '--' symbol is used to distinguish between params to emrun
+from params to the page.
+
+To find the names of the tests, open the index.html and look for the "key" field in the definition of the tests array.
+
+Launching the test suite HTTP server without running any tests
+--------------------------------------------------------------
+
+Sometimes it is useful to just host the test suite over HTTP without immediately launching a browser process. To fire up a HTTP server
+in the root directory of the emunittest suite, run the start_server(.bat) script. Then navigate a browser to the shown HTTP address,
+typically http://localhost:6931/
+
+Configuring test run mode
+-------------------------
+
+It is possible to pass parameters to the index.html page to automatically choose options for how to run. These parameters come after the
+'--' delimiter on the command line.
+
+For example, to run all tests without WebGL vsync enabled, run
+
+   python run.py --browser=/path/to/firefox -- novsync
+
+To enable torture test mode (infinitely reruns the suite after finishing), execute
+
+  python run.py --browser=/path/to/firefox -- tortureMode
+
+In parallel torture mode, multiple tests are run at the same time in several tabs:
+
+  python run.py --browser=/path/to/firefox -- paralleltorturemode novsync
+
+This run is best chained with novsync, since that flag is needed to update rendering on the background tabs (with novsync, postMessage()
+will be used instead of requestAnimationFrame to pump the rendering)
+
+Running the suite on an automatically downloaded Firefox Nightly
+----------------------------------------------------------------
+
+The emunittest suite can also run in an automated/unattended manner where the suite harness downloads versions of Firefox Nightly and executes the suite on them.
+The benchmark_firefox.py script is used for that purpose. There are a few different ways to run this:
+
+ - To download latest Firefox and run the harness through it, type
+
+     python benchmark_firefox.py latest
+
+ - To download and test the newest Firefox Nightly version that hasn't yet been tested, run
+
+     python benchmark_firefox.py latest_untested
+
+   In this mode, the harness keeps track of any earlier tested Nightly versions (located in .benchmarks.done subdirectory) to make sure it only tests the newest one.
+   The individual tags in the subdirectory .benchmarks.done can be freely deleted to make the harness re-test Firefox Nightly from a particular date.
+
+ - To continuously keep downloading and testing the newest Firefox Nightly versions in a sequence, run
+
+     python benchmark_firefox.py all_untested
+
+   This script will loop over all recent Nightlies up to 180 days in the past.
+
+Avoiding redownloading browser versions
+---------------------------------------
+
+If there is a need to benchmark the same browser version multiple times, it is possible to keep the downloaded zip files in a cache directory, to avoid having to
+redownload it later. To do this, pass the command line parameter --no_delete_zip to benchmark_firefox.py. To keep the whole browser subdirectory on disk, one can
+also pass the --no_delete command line parameter to benchmark_firefox.py. For example,
+
+    python benchmark_firefox.py all_untested --no_delete_zip
+
+will test Nightlies up to 180 days in history, while keeping all downloaded Firefox Nightly zip files in the subdirectory .browsers (feel free to delete the cache
+directory at any given time)
+
+If the system hardware configuration changes
+--------------------------------------------
+
+To identify the system across multiple runs so that it is possible to graph a timeline view from runs from the same machine, a unique identifier is generated to the
+user home directory, in location ~/.emrun.generated.guid. If the system hardware setup is modified, e.g. changing GPUs, or updating the major version of an operating
+system, or similar, it can be desirable to make the updated system appear as a completely new hardware. To reset the identifier, simply delete ~/.emrun.generated.guid,
+after which the system will appear as a uniquely new system.

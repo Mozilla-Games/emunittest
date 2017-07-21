@@ -1,0 +1,31 @@
+function injectInputStream(referenceTestFrameNumber) { 
+if (referenceTestFrameNumber == 0) simulateMouseEvent("mousemove", 0.821875, 0.6895833333333333, 0);
+if (referenceTestFrameNumber == 0) simulateMouseEvent("mousemove", 0.821875, 0.725, 0);
+if (referenceTestFrameNumber == 0) simulateMouseEvent("mousemove", 0.8203125, 0.7083333333333334, 0);
+if (referenceTestFrameNumber == 0) simulateMouseEvent("mousemove", 0.8171875, 0.7083333333333334, 0);
+if (referenceTestFrameNumber == 0) simulateMouseEvent("mousemove", 0.8171875, 0.70625, 0);
+if (referenceTestFrameNumber == 1) simulateMouseEvent("mousemove", 0.8140625, 0.6875, 0);
+if (referenceTestFrameNumber == 2) simulateMouseEvent("mousemove", 0.8109375, 0.6541666666666667, 0);
+if (referenceTestFrameNumber == 3) simulateMouseEvent("mousemove", 0.809375, 0.6270833333333333, 0);
+if (referenceTestFrameNumber == 4) simulateMouseEvent("mousemove", 0.809375, 0.6229166666666667, 0);
+if (referenceTestFrameNumber == 5) simulateMouseEvent("mousemove", 0.809375, 0.61875, 0);
+if (referenceTestFrameNumber == 6) simulateMouseEvent("mousemove", 0.809375, 0.6104166666666667, 0);
+if (referenceTestFrameNumber == 7) simulateMouseEvent("mousemove", 0.8046875, 0.5833333333333334, 0);
+if (referenceTestFrameNumber == 8) simulateMouseEvent("mousemove", 0.8015625, 0.55625, 0);
+if (referenceTestFrameNumber == 9) simulateMouseEvent("mousemove", 0.8, 0.53125, 0);
+if (referenceTestFrameNumber == 10) simulateMouseEvent("mousemove", 0.796875, 0.5166666666666667, 0);
+if (referenceTestFrameNumber == 11) simulateMouseEvent("mousemove", 0.7953125, 0.5104166666666666, 0);
+if (referenceTestFrameNumber == 12) simulateMouseEvent("mousemove", 0.7921875, 0.5020833333333333, 0);
+if (referenceTestFrameNumber == 13) simulateMouseEvent("mousemove", 0.7875, 0.49375, 0);
+if (referenceTestFrameNumber == 14) simulateMouseEvent("mousemove", 0.7859375, 0.4895833333333333, 0);
+if (referenceTestFrameNumber == 15) simulateMouseEvent("mousemove", 0.7859375, 0.48333333333333334, 0);
+if (referenceTestFrameNumber == 16) simulateMouseEvent("mousemove", 0.775, 0.46458333333333335, 0);
+if (referenceTestFrameNumber == 17) simulateMouseEvent("mousemove", 0.771875, 0.45625, 0);
+if (referenceTestFrameNumber == 18) simulateMouseEvent("mousemove", 0.771875, 0.4479166666666667, 0);
+if (referenceTestFrameNumber == 19) simulateMouseEvent("mousemove", 0.7703125, 0.44583333333333336, 0);
+if (referenceTestFrameNumber == 20) simulateMouseEvent("mousemove", 0.7703125, 0.44375, 0);
+if (referenceTestFrameNumber == 21) simulateMouseEvent("mousedown", 0.7703125, 0.44375, 0);
+if (referenceTestFrameNumber == 24) simulateMouseEvent("mouseup", 0.7703125, 0.44375, 0);
+if (referenceTestFrameNumber == 27) simulateKeyEvent("keydown", 66, 0);
+if (referenceTestFrameNumber == 30) simulateKeyEvent("keyup", 66, 0);
+}

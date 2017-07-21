@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="freshProcess">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+    <title>HTML5 10kCubes Release</title>
+    <style>
+      .emscripten { padding-right: 0; margin-left: auto; margin-right: auto; display: block; }
+      canvas.emscripten { border: 0px solid black; }
+      body { margin: 0px; padding: 0px; }
+      textarea.emscripten { font-family: monospace; width: 80%; }
+      div.emscripten { text-align: center; }
+    </style>  
+  </head>
+  <body>
+    <div class="emscripten" style="font-size:32px; padding: 20px;">WebGL rAF Workload Benchmark</div>
+    <div class="emscripten" id="status">Downloading...</div>
+    <div class="emscripten">
+      <progress value="0" max="100" id="progress" hidden=1></progress>  
+    </div>
+    <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+    <div class="emscripten" id="buttonbar" style="display:none;">
+      <input type="button" value="fullscreen" onclick="Module.requestFullScreen()">
+        <input type="button" value="Pause" onclick="Module['pauseMainLoop']();">
+        <input type="button" value="Resume" onclick="Module['resumeMainLoop']();">
+        <input type="button" value="Quit" onclick="__exit(0)">
+    </div>
+    <div class="emscripten" id="results"></div>
+    <textarea class="emscripten" id="output" rows="8" style="margin-top:10px;"></textarea>
+    <script src='../cpuprofiler.js'></script>
+    <script src="../resize.js"></script>
+    <script type='text/javascript'>
+      function postBenchmarkResults(numRenderedFrames, renderTime) {
+        document.getElementById('results').innerHTML = 'Benchmark finished. Rendered ' + numRenderedFrames + ' frames in ' + renderTime + ' seconds. (lower is better)';
+      }
+      // connect to canvas
+      var Module = {
+        providesRafIntegration: true, // If true, this demo provides requestAnimationFrame() integration for emunittest built-in. Generally this needs to be false, unless the app was specially built with emunittest support enabled.
+        usesEmscriptenHTML5InputAPI: true, // Set this to true for demos that utilize the Emscripten html5.h input API. Defaults to false.
+
+        preRun: (function() { return (location.search.indexOf('cpuprofiler') != -1) ? [cpuprofiler_add_hooks] : []; })(),
+        renderTargetWidth: 640,
+        renderTargetHeight: 480,
+        postRun: [function resize() {
+          setElementFullscreen(document.getElementById('canvas'), true);
+        }],
+        noImageDecoding: true, // Don't use browser image decoding in gfxapi, all images are loaded synchronously, so this is unused.
+        noAudioDecoding: true, // Also skip audio decoder step.
+        print: (function() {
+          var element = document.getElementById('output');
+          element.value = ''; // clear browser cache
+          return function(text) {
+            // These replacements are necessary if you render to raw HTML
+            //text = text.replace(/&/g, "&amp;");
+            //text = text.replace(/</g, "&lt;");
+            //text = text.replace(/>/g, "&gt;");
+            //text = text.replace('\n', '<br>', 'g');
+            element.value += text + "\n";
+            element.scrollTop = 99999; // focus on bottom
+          };
+        })(),
+        printErr: function(text) {
+          if (0) { // XXX disabled for safety typeof dump == 'function') {
+            dump(text + '\n'); // fast, straight to the real console
+          } else {
+            console.log(text);
+          }
+          
+        },
+        locateFile: function(url) { return url + '.gz'; },
+        canvas: document.getElementById('canvas'),
+        setStatus: function(text) {
+          if (Module.setStatus.interval) clearInterval(Module.setStatus.interval);
+          var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+          var statusElement = document.getElementById('status');
+          var progressElement = document.getElementById('progress');
+          if (m) {
+            text = m[1];
+            progressElement.value = parseInt(m[2])*100;
+            progressElement.max = parseInt(m[4])*100;
+            progressElement.hidden = false;
+          } else {
+            progressElement.value = null;
+            progressElement.max = null;
+            progressElement.hidden = true;
+          }
+          statusElement.innerHTML = text;
+        },
+        totalDependencies: 0,
+        monitorRunDependencies: function(left) {
+          this.totalDependencies = Math.max(this.totalDependencies, left);
+          Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+        }
+      };
+      Module.setStatus('Downloading...');
+    </script>
+    <script src="../emtimer.js"></script>
+    <script src="inputstream.js"></script>
+    <script>
+if (!(!Math.fround)) {
+  var script = document.createElement('script');
+  script.src = Module.locateFile("10kCubes.js");
+  document.body.appendChild(script);
+} else {
+  var codeXHR = new XMLHttpRequest();
+  codeXHR.open('GET', Module.locateFile('10kCubes.js'), true);
+  codeXHR.onload = function() {
+    var code = codeXHR.responseText;
+    if (!Math.fround) { 
+console.log('optimizing out Math.fround calls');
+code = code.replace(/Math_fround\(/g, '(').replace("'use asm'", "'almost asm'")
+ }
+
+    var blob = new Blob([code], { type: 'text/javascript' });
+    codeXHR = null;
+    var src = URL.createObjectURL(blob);
+    var script = document.createElement('script');
+    script.src = URL.createObjectURL(blob);
+    script.onload = function() {
+      URL.revokeObjectURL(script.src);
+    };
+    document.body.appendChild(script);
+  };
+  codeXHR.send(null);
+}
+
+</script>
+  </body>
+</html>
